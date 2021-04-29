@@ -42,21 +42,21 @@ class Lib:
     __beamf = io.load_beamf(__freqc, abs_path="/mnt/c/Users/sebas/OneDrive/Desktop/Uni/")
 
 
-    def __init__(self, npatch, smoothing_par = None, C_lF = None, C_lN = None, C_lS = None):
+    def __init__(self, npatch, smoothing_par = 0, C_lF = None, C_lN = None, C_lS = None):
         self.shape = (Lib.__lmax+1, len(Lib.__detector), len(Lib.__detector))
         self.npatch = npatch
 
-        if smoothing_par != None:
+        if float(smoothing_par != 0.0):
             self.noisevar_map = {
                 key: hp.smoothing(val, fwhm=smoothing_par)
                     for key, val in Lib.__noisevar_map.items()}
         else:
-            self.noisevar_map == Lib.__noisevar_map
+            self.noisevar_map = Lib.__noisevar_map
 
         if C_lF == None:
             self.C_lF = np.zeros(self.shape, float)
 
-        self.noiselevel = self.varmap2noiselevel(self.noisevar_map)
+        self.noiselevel = np.array([self.varmap2noiselevel(self.noisevar_map[freq]) for freq in Lib.__detector])
 
         if C_lN == None:
             self.C_lN = self.beamf2C_lN(Lib.__beamf, self.noiselevel, Lib.__freqc)
@@ -108,22 +108,26 @@ class Lib:
             "044": 29,
             "070": 30
         }
-        ret = 0
-        freqs = freqc.split('-')
-        hdul = beamf[freqc]
-        if int(freqs[0]) >= 100 and int(freqs[1]) >= 100:
-            ret = 1 / hdul["HFI"][1].data.field(TEB_dict["E"])[:Lib.__lmax+1]**2
-        elif int(freqs[0]) < 100 and int(freqs[1]) < 100:
-            b = np.sqrt(hdul["LFI"][LFI_dict[freqs[0]]].data.field(0))
-            buff = np.concatenate((
-                b[:min(Lib.__lmax+1, len(b))],
-                np.array([np.NaN for n in range(max(0, Lib.__lmax+1-len(b)))])))
-            ret = 1 / buff**2
-        if int(freqs[0])<100:
-            nside = 1024
-        else:
-            nside = 2048
-        return ret * hp.nside2pixarea(nside) * 1e12 * dp
+        local = np.zeros((len(Lib.__detector), self.npatch, Lib.__lmax+1))
+        C = 0
+        for n in range(self.C_lN.shape[0]):
+            hdul = beamf[freqc]
+            freqs = freqc[n].split('-')
+            for m in range(self.C_lN.shape[1]):
+                if int(freqs[0]) >= 100 and int(freqs[1]) >= 100:
+                    ret = 1 / hdul["HFI"][1].data.field(TEB_dict["E"])[:Lib.__lmax+1]**2
+                elif int(freqs[0]) < 100 and int(freqs[1]) < 100:
+                    b = np.sqrt(hdul["LFI"][LFI_dict[freqs[0]]].data.field(0))
+                    buff = np.concatenate((
+                        b[:min(Lib.__lmax+1, len(b))],
+                        np.array([np.NaN for n in range(max(0, Lib.__lmax+1-len(b)))])))
+                    C = 1 / buff**2
+                if int(freqs[0])<100:
+                    nside = 1024
+                else:
+                    nside = 2048
+                local[n,m,:] = C * hp.nside2pixarea(nside) * 1e12 * dp
+        return local
 
 
     def C_lN2cov_lN(self):
@@ -181,9 +185,9 @@ class Lib:
         return 1/cov_minimal
 
 
-    def varmap2noiselevel(self, data):
+    def varmap2noiselevel(self, varmap):
         patch_bounds = np.array(list(range(self.npatch+1)))/self.npatch
-        mean, binedges = np.histogram(data, bins=np.logspace(np.log10(data.min()),np.log10(data.max()),10000))
+        mean, binedges = np.histogram(varmap, bins=np.logspace(np.log10(varmap.min()),np.log10(varmap.max()),10000))
         patch_noiselevel = np.zeros((len(patch_bounds)-1))
         buff=0
         buff2=0
@@ -194,7 +198,7 @@ class Lib:
             buff += mean[idx]
             buff2 += mean[idx]
 
-            if buff <= patch_bounds[patchidx+1] * len(data):
+            if buff <= patch_bounds[patchidx+1] * len(varmap):
                 noisebuff +=  mean[idx] * (binedges[idx+1]+binedges[idx])/2
             else:
 
