@@ -69,13 +69,32 @@ class Lib:
             self.C_lS = C_lS
         
         ll = np.arange(0,Lib.__lmax+1,1)
-        self.cov_lS = (np.ones((len(Lib.__detector),len(Lib.__detector),Lib.__lmax+1))* self.spectrum_trth/(ll*(ll+1))*2*np.pi).T
+        self.cov_lS = (np.ones((len(Lib.__detector),len(Lib.__detector),Lib.__lmax+1))* self.C_lS/(ll*(ll+1))*2*np.pi).T
         self.cov_lS[:10,:,:] = np.zeros((10, len(Lib.__detector), len(Lib.__detector)))
         
         self.cov_lN = self.C_lN2cov_lN()
 
         self.fsky = np.zeros((npatch, npatch), float)
         np.fill_diagonal(self.fsky, 1/npatch*np.ones((npatch)))
+
+        self.cov_ltot = self.cov_lS + self.cov_lN
+        self.cov_ltot_min = np.concatenate(
+            (np.zeros(shape=(self.cov_ltot.shape[0],1)),
+             np.array([
+                [Lib.cov_l2cov_lmin(self.cov_ltot[n,l])
+                    for l in range(1,self.cov_ltot.shape[1])]
+                for n in range(self.cov_ltot.shape[0])])),axis=1)
+
+        self.variance = np.zeros((Lib.__lmax+1,self.cov_ltot.shape[0],self.cov_ltot.shape[0]), float)
+        for n in range(npatch):
+            self.variance[:,n,n] = 2 * self.cov_ltot_min[n,:] * self.cov_ltot_min[n,:]/((2*ll+1)*self.fsky[n,n])
+        self.variance_min = np.zeros((self.variance.shape[0]))
+        for l in range(self.variance.shape[0]):
+            try:
+                self.variance_min[l] = np.nan_to_num(
+                    Lib.cov_l2cov_lmin(self.variance[l]))#np.sqrt(np.sqrt(fsky[0,0]))))
+            except:    
+                pass
 
 
     def beamf2C_lN(self, beamf, dp, freqc):
@@ -130,7 +149,8 @@ class Lib:
         return weights
 
 
-    def cov_l2cov_minl(self, C_l) -> np.array:
+    @staticmethod
+    def cov_l2cov_lmin(C_l) -> np.array:
         """Returns the minimal covariance using inverse variance weighting, i.e. calculates
         :math:`C^{\texttt{min}}_l = \frac{1}{\textbf{1}^\dagger (C_l^S + C_l^F + C_l^N)^{-1}\textbf{1}}`.
 
