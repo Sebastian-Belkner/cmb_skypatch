@@ -67,12 +67,10 @@ class Lib:
             self.C_lF = np.zeros(self.shape, float)
 
         self.noiselevel = np.array([self.varmap2noiselevel(self.noisevar_map[freq]) for freq in Lib.__detector])
-        print(self.noiselevel.shape)
         if C_lN == None:
             self.C_lN = self.beamf2C_lN(Lib.__beamf, self.noiselevel, Lib.__freqc)
         else:
             self.C_lN = C_lN
-        print(self.C_lN.shape)
         ll = np.arange(0,Lib.__lmax+1,1)
         if C_lS == None:
             self.C_lS = Lib.spectrum_trth[:self.shape[0]].to_numpy()/(ll*(ll+1))*2*np.pi
@@ -84,7 +82,6 @@ class Lib:
         
         self.cov_lN = np.array([
             self.C_lN2cov_lN(self.C_lN[:,n,:]) for n in range(self.C_lN.shape[1])])
-        print(self.cov_lN.shape)
         self.fsky = np.zeros((npatch, npatch), float)
         np.fill_diagonal(self.fsky, 1/npatch*np.ones((npatch)))
 
@@ -97,7 +94,6 @@ class Lib:
                 for n in range(self.cov_ltot.shape[0])])),axis=1)
 
         self.variance = np.zeros((Lib.__lmax+1,self.cov_ltot.shape[0],self.cov_ltot.shape[0]), float)
-        print(self.variance.shape, self.cov_ltot_min.shape, self.fsky.shape)
         for n in range(npatch):
             self.variance[:,n,n] = 2 * self.cov_ltot_min[n,:] * self.cov_ltot_min[n,:]/((2*ll+1)*self.fsky[n,n])
         self.variance[self.variance == inf] = 0
@@ -199,6 +195,7 @@ class Lib:
 
 
     def varmap2noiselevel(self, varmap):
+        varmap = np.where(varmap==0.0, np.mean(varmap), varmap)
         patch_bounds = np.array(list(range(self.npatch+1)))/self.npatch
         mean, binedges = np.histogram(varmap, bins=np.logspace(np.log10(varmap.min()),np.log10(varmap.max()),10000))
         patch_noiselevel = np.zeros((len(patch_bounds)-1))

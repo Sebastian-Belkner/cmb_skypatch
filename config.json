@@ -4,9 +4,9 @@
     "mskset": "smica",
     "freqdset": "DX12",
     "lmax": 3000,
-    "smoothing_par": [0,1,10],
+    "smoothing_par": [0],
     "lmax_mask": 6000,
-    "detector": ["030", "044", "070", "143", "217"],
+    "detector": ["030", "044", "070", "100", "143", "217", "353"],
     "freqfilter": ["545", "857"],
     "specfilter": [
         "TB",
