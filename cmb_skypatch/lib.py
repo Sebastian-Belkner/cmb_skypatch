@@ -6,11 +6,10 @@ __author__ = "S. Belkner"
 
 
 import healpy as hp
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
-from matplotlib.patches import Patch
+
 from numpy import inf
 import json
 import platform
@@ -23,21 +22,34 @@ class Lib:
     PLANCKMAPFREQ = [p.value for p in list(Planckf)]
     __uname = platform.uname()
     if __uname.node == "DESKTOP-KMIGUPV":
-        __mch = "XPS"
+        mch = "XPS"
     else:
-        __mch = "NERSC"
+        mch = "NERSC"
     with open('/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/config.json', "r") as f:
-        __cf = json.load(f)
-    __cf[__mch]["indir"] = "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/data/"
-    __spectrum_trth = pd.read_csv(
-        "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/"+__cf[__mch]['powspec_truthfile'],
+        cf = json.load(f)
+    cf[mch]["indir"] = "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/data/"
+    spectrum_trth = pd.read_csv(
+        "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/"+cf[mch]['powspec_truthfile'],
         header=0,
         sep='    ',
-        index_col=0)
+        index_col=0)["Planck-"+"EE"]
+        
+    noisevar_map_raw = io.load_plamap_new(cf, field=7)
+
+    smoothed_noisevar_map = dict()
+    for smooth in cf['pa']['smoothing_par']:
+        if float(smooth) != 0.0:
+            if str(float(smooth)) not in smoothed_noisevar_map.keys():
+                smoothed_noisevar_map[str(float(smooth))] = dict()
+            for key, val in noisevar_map_raw.items():
+                if key not in smoothed_noisevar_map[str(float(smooth))].keys():
+                    smoothed_noisevar_map[str(float(smooth))][key] = dict()
+                smoothed_noisevar_map[str(float(smooth))].update({key:
+                    hp.smoothing(val, fwhm=smooth*0.0174533, iter=0)})
+                       
     
-    __noisevar_map = io.load_plamap_new(__cf, field=7)
-    __lmax = __cf['pa']['lmax']
-    __detector = __cf['pa']['detector']
+    __lmax = cf['pa']['lmax']
+    __detector = cf['pa']['detector']
     __freqc = [n+"-"+n for n in __detector]
     __beamf = io.load_beamf(__freqc, abs_path="/mnt/c/Users/sebas/OneDrive/Desktop/Uni/")
 
@@ -46,34 +58,33 @@ class Lib:
         self.shape = (Lib.__lmax+1, len(Lib.__detector), len(Lib.__detector))
         self.npatch = npatch
 
-        if float(smoothing_par != 0.0):
-            self.noisevar_map = {
-                key: hp.smoothing(val, fwhm=smoothing_par)
-                    for key, val in Lib.__noisevar_map.items()}
+        if float(smoothing_par) != 0.0:
+            self.noisevar_map = Lib.smoothed_noisevar_map[str(float(smoothing_par))]
         else:
-            self.noisevar_map = Lib.__noisevar_map
+            self.noisevar_map = Lib.noisevar_map_raw
 
         if C_lF == None:
             self.C_lF = np.zeros(self.shape, float)
 
         self.noiselevel = np.array([self.varmap2noiselevel(self.noisevar_map[freq]) for freq in Lib.__detector])
-
+        print(self.noiselevel.shape)
         if C_lN == None:
             self.C_lN = self.beamf2C_lN(Lib.__beamf, self.noiselevel, Lib.__freqc)
         else:
             self.C_lN = C_lN
-        
+        print(self.C_lN.shape)
+        ll = np.arange(0,Lib.__lmax+1,1)
         if C_lS == None:
-            self.C_lS = Lib.__spectrum_trth[:self.shape[0]].to_numpy()
+            self.C_lS = Lib.spectrum_trth[:self.shape[0]].to_numpy()/(ll*(ll+1))*2*np.pi
         else:
             self.C_lS = C_lS
         
-        ll = np.arange(0,Lib.__lmax+1,1)
-        self.cov_lS = (np.ones((len(Lib.__detector),len(Lib.__detector),Lib.__lmax+1))* self.C_lS/(ll*(ll+1))*2*np.pi).T
+        self.cov_lS = (np.ones((len(Lib.__detector),len(Lib.__detector),Lib.__lmax+1))* self.C_lS).T
         self.cov_lS[:10,:,:] = np.zeros((10, len(Lib.__detector), len(Lib.__detector)))
         
-        self.cov_lN = self.C_lN2cov_lN()
-
+        self.cov_lN = np.array([
+            self.C_lN2cov_lN(self.C_lN[:,n,:]) for n in range(self.C_lN.shape[1])])
+        print(self.cov_lN.shape)
         self.fsky = np.zeros((npatch, npatch), float)
         np.fill_diagonal(self.fsky, 1/npatch*np.ones((npatch)))
 
@@ -86,8 +97,10 @@ class Lib:
                 for n in range(self.cov_ltot.shape[0])])),axis=1)
 
         self.variance = np.zeros((Lib.__lmax+1,self.cov_ltot.shape[0],self.cov_ltot.shape[0]), float)
+        print(self.variance.shape, self.cov_ltot_min.shape, self.fsky.shape)
         for n in range(npatch):
             self.variance[:,n,n] = 2 * self.cov_ltot_min[n,:] * self.cov_ltot_min[n,:]/((2*ll+1)*self.fsky[n,n])
+        self.variance[self.variance == inf] = 0
         self.variance_min = np.zeros((self.variance.shape[0]))
         for l in range(self.variance.shape[0]):
             try:
@@ -95,6 +108,7 @@ class Lib:
                     Lib.cov_l2cov_lmin(self.variance[l]))#np.sqrt(np.sqrt(fsky[0,0]))))
             except:    
                 pass
+        self.variance_min_ma = ma.masked_array(self.variance_min, mask=np.where(self.variance_min<=0, True, False))
 
 
     def beamf2C_lN(self, beamf, dp, freqc):
@@ -110,12 +124,12 @@ class Lib:
         }
         local = np.zeros((len(Lib.__detector), self.npatch, Lib.__lmax+1))
         C = 0
-        for n in range(self.C_lN.shape[0]):
-            hdul = beamf[freqc]
-            freqs = freqc[n].split('-')
-            for m in range(self.C_lN.shape[1]):
+        for ndetector in range(local.shape[0]):
+            hdul = beamf[freqc[ndetector]]
+            freqs = freqc[ndetector].split('-')
+            for npatch in range(local.shape[1]):
                 if int(freqs[0]) >= 100 and int(freqs[1]) >= 100:
-                    ret = 1 / hdul["HFI"][1].data.field(TEB_dict["E"])[:Lib.__lmax+1]**2
+                    C = 1 / hdul["HFI"][1].data.field(TEB_dict["E"])[:Lib.__lmax+1]**2
                 elif int(freqs[0]) < 100 and int(freqs[1]) < 100:
                     b = np.sqrt(hdul["LFI"][LFI_dict[freqs[0]]].data.field(0))
                     buff = np.concatenate((
@@ -126,11 +140,11 @@ class Lib:
                     nside = 1024
                 else:
                     nside = 2048
-                local[n,m,:] = C * hp.nside2pixarea(nside) * 1e12 * dp
+                local[ndetector,npatch,:] = C * hp.nside2pixarea(nside) * 1e12 * dp[ndetector,npatch]
         return local
 
 
-    def C_lN2cov_lN(self):
+    def C_lN2cov_lN(self, C_lN):
         """Creates auto and cross covariance matrix, with noise only, so no cross.
 
         Args:
@@ -138,12 +152,11 @@ class Lib:
 
         Returns:
             [type]: [description]
-        """    
-
-        row, col = np.diag_indices(self.C_lN.shape[0])
+        """   
+        row, col = np.diag_indices(C_lN.shape[0])
         C = np.zeros(self.shape, float)
         for l in range(C.shape[0]):
-            C[l,row,col] = self.C_lN[:,l]
+            C[l,row,col] = C_lN[:,l]
         return C
     
 
@@ -211,5 +224,7 @@ class Lib:
 
         patch_noiselevel[-1] = noisebuff/(buff2)
         # plt.vlines(np.concatenate(([data.min()],boundaries)), ymin=0, ymax=1e6, color='red', alpha=0.5)
+        
+        print(patch_noiselevel.shape, np.mean(patch_noiselevel))
         return patch_noiselevel
-    # noise_level = np.array(get_noiselevel(noisevar_map['143'], self.npatch, '044'))
+        # noise_level = np.array(get_noiselevel(noisevar_map['143'], self.npatch, '044'))
