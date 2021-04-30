@@ -1,9 +1,6 @@
 vis/ filter=lfs diff=lfs merge=lfs -text
-vis/analyticpatching-NoiseSignal4patches.jpg filter=lfs diff=lfs merge=lfs -text
-vis/compare_variance_improvement_['4_0-1_0',[[:space:]]'4_1-1_1'].jpg filter=lfs diff=lfs merge=lfs -text
-vis/compare_variance_improvement_['4_0-2_0',[[:space:]]'4_1-2_1'].jpg filter=lfs diff=lfs merge=lfs -text
-vis/compare_variance_patches['1',[[:space:]]'4']_smoothings[<lib.Lib[[:space:]]object[[:space:]]at[[:space:]]0x7f5c1b8658b0>,[[:space:]]<lib.Lib[[:space:]]object[[:space:]]at[[:space:]]0x7f5c1b865c10>].jpg filter=lfs diff=lfs merge=lfs -text
-vis/compare_variance_patches['1',[[:space:]]'4']_smoothings[<lib.Lib[[:space:]]object[[:space:]]at[[:space:]]0x7f5f47eb3040>,[[:space:]]<lib.Lib[[:space:]]object[[:space:]]at[[:space:]]0x7f5f47eb3880>].jpg filter=lfs diff=lfs merge=lfs -text
-vis/compare_variance_patches['1',[[:space:]]'4']_smoothings[<lib.Lib[[:space:]]object[[:space:]]at[[:space:]]0x7f5f47eb33a0>,[[:space:]]<lib.Lib[[:space:]]object[[:space:]]at[[:space:]]0x7f5f47eb36d0>].jpg filter=lfs diff=lfs merge=lfs -text
-vis/analyticpatching-NoiseSignal128patches.jpg filter=lfs diff=lfs merge=lfs -text
-vis/analyticpatching-NoiseSignal2patches.jpg filter=lfs diff=lfs merge=lfs -text
+vis/* filter=lfs diff=lfs merge=lfs -text
+.jpg filter=lfs diff=lfs merge=lfs -text
+.jpeg filter=lfs diff=lfs merge=lfs -text
+.fits filter=lfs diff=lfs merge=lfs -text
+vis/** filter=lfs diff=lfs merge=lfs -text
