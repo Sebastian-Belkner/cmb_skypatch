@@ -91,7 +91,7 @@ def compare_variance_min(data):
     plt.xlim((2e1,3e3))
     # plt.ylim((-.02,3))
     # plt.tight_layout()
-    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_variance_patches{}_smoothings{}.jpg".format(str([key for key, val in data.items()]), str(list(data[random.choice(list(data.items()))[0]].values()))))
+    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_variance_patches{}_smoothings{}.jpg".format(str([key for key, val in data.items()]), pr))
 
 
 def compare_improvement(data, compare_conf):
@@ -115,9 +115,18 @@ def compare_errorbars(data, user_smoothpar):
     fig, ax = plt.subplots(figsize=(8,6))
     it=0
     for npatch, smdegdic in data.items():
+        pr=''
         for smooth_par, val in smdegdic.items():
             if smooth_par in user_smoothpar:
-                plt.errorbar(x=range(data['1']['0'].C_lS.shape[0]), y=data['1']['0'].C_lS, yerr=np.sqrt(val.variance_min_ma), label="{} patches - {} deg smooth".format(npatch, smooth_par), alpha=0.5)
+                pr+=smooth_par
+                plt.errorbar(
+                    x=range(data['1']['0'].C_lS.shape[0]),
+                    y=data['1']['0'].C_lS,
+                    yerr=np.sqrt(val.variance_min_ma),
+                    label="{} patches - {} deg smooth".format(npatch, smooth_par),
+                    alpha=0.5,
+                    color=CB_color_cycle[it])
+                it+=1
     plt.legend()
     plt.yscale('log')
     # plt.tight_layout()
@@ -128,4 +137,4 @@ def compare_errorbars(data, user_smoothpar):
     plt.xscale('log')
     plt.ylim((1e-5,1e-2))
     plt.xlim((1e1,3e3))
-    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_errorbars{}_smoothings{}.jpg".format(str([key for key, val in data.items()]), str(list(data[random.choice(list(data.items()))[0]].values()))))
+    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_errorbars{}_smoothings{}.jpg".format(str([key for key, val in data.items()]), pr))
