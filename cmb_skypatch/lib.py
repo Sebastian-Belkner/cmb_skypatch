@@ -16,7 +16,6 @@ import platform
 from component_separation.cs_util import Planckf, Plancks
 import component_separation.io as io
 
-
 class Lib:
     PLANCKSPECTRUM = [p.value for p in list(Plancks)]
     PLANCKMAPFREQ = [p.value for p in list(Planckf)]
@@ -36,6 +35,8 @@ class Lib:
         
     noisevar_map_raw = io.load_plamap_new(cf, field=7)
 
+    
+
     smoothed_noisevar_map = dict()
     for smooth in cf['pa']['smoothing_par']:
         if float(smooth) != 0.0:
@@ -46,7 +47,8 @@ class Lib:
                     smoothed_noisevar_map[str(float(smooth))][key] = dict()
                 smoothed_noisevar_map[str(float(smooth))].update({key:
                     hp.smoothing(val, fwhm=smooth*0.0174533, iter=0)})
-                       
+
+        
     
     __lmax = cf['pa']['lmax']
     __detector = cf['pa']['detector']
@@ -54,7 +56,7 @@ class Lib:
     __beamf = io.load_beamf(__freqc, abs_path="/mnt/c/Users/sebas/OneDrive/Desktop/Uni/")
 
 
-    def __init__(self, npatch, smoothing_par = 0, C_lF = None, C_lN = None, C_lS = None):
+    def __init__(self, npatch, smoothing_par = 0, C_lF = None, C_lN = None, C_lS = None, C_lN_factor=1):
         self.shape = (Lib.__lmax+1, len(Lib.__detector), len(Lib.__detector))
         self.npatch = npatch
 
@@ -68,7 +70,7 @@ class Lib:
 
         self.noiselevel = np.array([self.varmap2noiselevel(self.noisevar_map[freq]) for freq in Lib.__detector])
         if C_lN == None:
-            self.C_lN = self.beamf2C_lN(Lib.__beamf, self.noiselevel, Lib.__freqc)
+            self.C_lN = self.beamf2C_lN(Lib.__beamf, self.noiselevel, Lib.__freqc)*C_lN_factor
         else:
             self.C_lN = C_lN
         ll = np.arange(0,Lib.__lmax+1,1)
@@ -93,18 +95,18 @@ class Lib:
                     for l in range(1,self.cov_ltot.shape[1])]
                 for n in range(self.cov_ltot.shape[0])])),axis=1)
 
-        self.variance = np.zeros((Lib.__lmax+1,self.cov_ltot.shape[0],self.cov_ltot.shape[0]), float)
+        self.approx_variance = np.zeros((Lib.__lmax+1,self.cov_ltot.shape[0],self.cov_ltot.shape[0]), float)
         for n in range(npatch):
-            self.variance[:,n,n] = 2 * self.cov_ltot_min[n,:] * self.cov_ltot_min[n,:]/((2*ll+1)*self.fsky[n,n])
-        self.variance[self.variance == inf] = 0
-        self.variance_min = np.zeros((self.variance.shape[0]))
-        for l in range(self.variance.shape[0]):
+            self.approx_variance[:,n,n] = 2 * self.cov_ltot_min[n,:] * self.cov_ltot_min[n,:]/((2*ll+1)*self.fsky[n,n])
+        self.approx_variance[self.approx_variance == inf] = 0
+        self.approx_variance_min = np.zeros((self.approx_variance.shape[0]))
+        for l in range(self.approx_variance.shape[0]):
             try:
-                self.variance_min[l] = np.nan_to_num(
-                    Lib.cov_l2cov_lmin(self.variance[l]))#np.sqrt(np.sqrt(fsky[0,0]))))
+                self.approx_variance_min[l] = np.nan_to_num(
+                    Lib.cov_l2cov_lmin(self.approx_variance[l]))#np.sqrt(np.sqrt(fsky[0,0]))))
             except:    
                 pass
-        self.variance_min_ma = ma.masked_array(self.variance_min, mask=np.where(self.variance_min<=0, True, False))
+        self.approx_variance_min_ma = ma.masked_array(self.approx_variance_min, mask=np.where(self.approx_variance_min<=0, True, False))
 
 
     def beamf2C_lN(self, beamf, dp, freqc):

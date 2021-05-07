@@ -11,6 +11,8 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import matplotlib.gridspec as gridspec
+
 
 from scipy import stats
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -18,52 +20,62 @@ CB_color_cycle = ["#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA449
                              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888"]
 
 
-def spectrum_variance(data_fullsky, data):
+def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7)):
     C_lS = data.C_lS
     cov_ltot_min = data.cov_ltot_min
-    variance_min_ma = data.variance_min_ma
-    variance = data.variance
+    variance_min_ma = data.approx_variance_min_ma
+    variance = data.approx_variance
 
-    fig, ax = plt.subplots(figsize=(8,6))
+    plt.figure(figsize=(8,6))
+
+    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+    ax0 = plt.subplot(gs[0])
     ll = np.arange(0,variance_min_ma.shape[0],1)
-    plt.plot(variance_min_ma, label='Variance, combined patches', lw=3, ls="-", color="black")
-    plt.plot(data_fullsky.variance_min_ma, label="Variance, full sky", lw=3, ls="--", color="black")
+    ax0.plot(variance_min_ma, label='Variance, combined patches', lw=3, ls="-", color="black")
+    ax0.scatter(ll, data_empiric.approx_variance_min_ma, label="Variance, empiric data", lw=2, ls="--", color="black", s=3, marker='x')
 
-    plt.plot(C_lS, label = 'Planck EE', lw=3, ls="-", color="red", alpha=0.5)
+    ax0.plot(C_lS, label = 'Planck EE', lw=3, ls="-", color="red", alpha=0.5)
     for n in range(cov_ltot_min.shape[0]):
-        plt.plot(cov_ltot_min[n,:], lw=1, ls="-", color="red", alpha=0.5)
-    plt.plot(0,0, label='Minimal powerspectrum from patches', color='red', alpha=0.5, lw=1)
+        ax0.plot(cov_ltot_min[n,:], lw=1, ls="-", color="red", alpha=0.5)
+    ax0.plot(0,0, label='Minimal powerspectrum from patches', color='red', alpha=0.5, lw=1)
 
-    plt.plot(2*C_lS*C_lS/((2*ll+1)), label="Variance, Planck EE, full sky", lw=3, ls="-", color="blue")
+    ax0.plot(2*C_lS*C_lS/((2*ll+1)), label="Variance, Planck EE, full sky", lw=3, ls="-", color="blue")
     # plt.plot(loc_opt_NN, label = "Variance, Planck EE, combined patches", lw=3, ls="--", color="green")
 
-    leg1 = plt.legend(loc='upper left')
+    leg1 = ax0.legend(loc='upper left')
     pa = [None for n in range(variance.shape[1])]
     for n in range(len(pa)):
-        p = plt.plot(variance[:,n,n], lw=2, ls="-", alpha=0.5)
+        p = ax0.plot(variance[:,n,n], lw=2, ls="-", alpha=0.5)
         col = p[0].get_color()
         pa[n] = Patch(facecolor=col, edgecolor='grey', alpha=0.5)
-    leg2 = plt.legend(handles=pa[:min(20,len(pa))],
+    leg2 = ax0.legend(handles=pa[:min(20,len(pa))],
             labels=["" for n in range(min(20,len(pa))-1)] + ['Variance, {} skypatches'.format(str(cov_ltot_min.shape[0]))],
             ncol=variance.shape[1], handletextpad=0.5, handlelength=0.5, columnspacing=-0.5,
             loc='lower left')
-    ax.add_artist(leg1)
+    ax0.add_artist(leg1)
 
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel("Multipole")
-    plt.ylabel(r"Variance $\sigma^2$ [$\mu K^4$]")
-    plt.xlim((2e1,3e3))
-    plt.ylim((1e-10,1e-2))
+    ax0.set_xscale('log')
+    ax0.set_yscale('log')
+    ax0.set_ylabel(r"Variance $\sigma^2$ [$\mu K^4$]")
+    ax0.set_xlim((2e1,3e3))
+    ax0.set_ylim((1e-10,1e-2))
     # plt.tight_layout()
-    ax2 = ax.twinx()
+    ax2 = ax0.twinx()
     ax2.tick_params(axis='y', labelcolor="red")
     ax2.set_ylabel(r'Powerspectrum $C_l$ [$\mu K^2$]', color= 'red')
-    plt.ylim((1e-10,1e-2))
-    plt.yscale('log')
-    plt.title("Combining {} skypatches".format(str(cov_ltot_min.shape[0])))
+    ax2.set_ylim((1e-10,1e-2))
+    ax2.set_yscale('log')
+    ax0.set_title("Combining {} skypatches".format(str(cov_ltot_min.shape[0])))
+    ax1 = plt.subplot(gs[1])
+    ax1.scatter(ll, data_empiric.approx_variance_min_ma/variance_min_ma-1, label='Ratio', color='black', s=3, marker='x')
+    ax1.set_xlabel("Multipole")
+    ax1.set_ylabel(r"Rel. diff.")
+    ax1.set_ylim(rd_ylim)
+    ax1.set_xscale('log')
+    ax1.set_xlim((2e1,3e3))
+    ax1.hlines(0,2e1,3e3, color='black', ls='--')
     plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/analyticpatching-NoiseSignal{}patches.jpg".format(str(cov_ltot_min.shape[0])))
-
+    
 
 def compare_variance_min(data):
     plt.figure(figsize=(8,6))
@@ -75,9 +87,9 @@ def compare_variance_min(data):
             if int(npatch)>1:
                 pr+=smooth_par+'-'
                 if it2==len(list(smdegdic.items()))-1:
-                    plt.plot(data['1'][smooth_par].variance_min_ma/val.variance_min_ma-1, label='{} patches - {} degree smoothing '.format(npatch, pr), lw=2, ls="-", color=CB_color_cycle[it])
+                    plt.plot(data['1'][smooth_par].approx_variance_min_ma/val.approx_variance_min_ma-1, label='{} patches - {} degree smoothing '.format(npatch, pr), lw=2, ls="-", color=CB_color_cycle[it])
                 else:
-                    plt.plot(data['1'][smooth_par].variance_min_ma/val.variance_min_ma-1, lw=2, ls="-", color=CB_color_cycle[it])
+                    plt.plot(data['1'][smooth_par].approx_variance_min_ma/val.approx_variance_min_ma-1, lw=2, ls="-", color=CB_color_cycle[it])
                 it2+=1
         it+=1
 
@@ -101,7 +113,7 @@ def compare_improvement(data, compare_conf):
         item1, item2 = comp_item.split('-')
         patch1, smooth1 = item1.split('_')
         patch2, smooth2 = item2.split('_')
-        val = (data['1'][smooth1].variance_min_ma - data[patch1][smooth1].variance_min_ma)/(data['1'][smooth2].variance_min_ma - data[patch2][smooth2].variance_min_ma)
+        val = (data['1'][smooth1].approx_variance_min_ma - data[patch1][smooth1].approx_variance_min_ma)/(data['1'][smooth2].approx_variance_min_ma - data[patch2][smooth2].approx_variance_min_ma)
         plt.plot(val, label='i={}, j={} patches -- i={}, j={} smoothing'.format(patch1, patch2, smooth1, smooth2), lw=2, ls="-")
         it+=1
     plt.ylabel(r"$\frac{\Delta \sigma^{2}_i}{\Delta \sigma^{2}_j}$", fontsize=20)
@@ -122,7 +134,7 @@ def compare_errorbars(data, user_smoothpar):
                 plt.errorbar(
                     x=range(data['1']['0'].C_lS.shape[0]),
                     y=data['1']['0'].C_lS,
-                    yerr=np.sqrt(val.variance_min_ma),
+                    yerr=np.sqrt(val.approx_variance_min_ma),
                     label="{} patches - {} deg smooth".format(npatch, smooth_par),
                     alpha=0.5,
                     color=CB_color_cycle[it])
@@ -138,3 +150,18 @@ def compare_errorbars(data, user_smoothpar):
     plt.ylim((1e-5,1e-2))
     plt.xlim((1e1,3e3))
     plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_errorbars{}_smoothings{}.jpg".format(str([key for key, val in data.items()]), pr))
+
+
+def s_over_n(data):
+    ll = np.arange(0,spdata['1']['0'].approx_variance_min_ma.shape[0],1)
+    for idx, n in enumerate(["030", "044", "070", "100", "143", "217", "353"]):
+        plt.plot(spdataNN['1']['0'].C_lS/np.sqrt(2 * spdata['1']['0'].cov_ltot[0,:,idx,idx] * spdata['1']['0'].cov_ltot[0,:,idx,idx]/((2*ll+1))), label=n)
+    plt.plot(spdataNN['1']['0'].C_lS/np.sqrt(spdataNN['1']['0'].approx_variance[:,0,0]), label='optimal CV limit')
+    plt.plot(spdata['1']['0'].C_lS/np.sqrt(spdata['1']['0'].approx_variance[:,0,0]), label='combined channels')
+        # plt.plot(spdata['1']['0'].approx_variance[:,0,0])
+    plt.legend()
+    plt.xlim((20,2000))
+    plt.title('EE-Spectrum and Noise - cosmic variance limit')
+    plt.xlabel('Multipole')
+    plt.ylabel('S/N')
+    plt.ylim((0,30))
