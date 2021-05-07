@@ -11,16 +11,38 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.gridspec as gridspec
 
 
 from scipy import stats
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 CB_color_cycle = ["#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
                              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888"]
+lmax = 3000
+bins = np.logspace(np.log10(1), np.log10(3000+1), 200)
+bl = bins[:-1]
+br = bins[1:]
 
+def _std_dev_binned(d):
+    if type(d) == np.ndarray:
+        val = d
+    else:
+        val = np.nan_to_num(d.to_numpy())
+    n, _ = np.histogram(
+        np.linspace(0,lmax,lmax),
+        bins=bins)
+    sy, _ = np.histogram(
+        np.linspace(0,lmax,lmax),
+        bins=bins,
+        weights=val)
+    sy2, _ = np.histogram(
+        np.linspace(0,lmax,lmax),
+        bins=bins,
+        weights=val * val)
+    mean = sy / n
+    std = np.sqrt(sy2/n - mean*mean)
+    return mean, std, _
 
-def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7)):
+def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7), npatches='1', smoothing_par='0'):
     C_lS = data.C_lS
     cov_ltot_min = data.cov_ltot_min
     variance_min_ma = data.approx_variance_min_ma
@@ -67,7 +89,11 @@ def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7)):
     ax2.set_yscale('log')
     ax0.set_title("Combining {} skypatches".format(str(cov_ltot_min.shape[0])))
     ax1 = plt.subplot(gs[1])
-    ax1.scatter(ll, data_empiric.approx_variance_min_ma/variance_min_ma-1, label='Ratio', color='black', s=3, marker='x')
+    for n in range(data_empiric['1']['0'].cov_ltot_min.shape[0]):
+        binmean, binerr , _ = _std_dev_binned(data_empiric['1']['0'].cov_ltot_min[n,:]/np.mean(data[npatches][smoothing_par].cov_ltot_min[:,:],axis=0)-1)
+        ax1.errorbar(0.5 * bl + 0.5 * br, binmean, binerr, fmt='x', capsize=1,
+            color=CB_color_cycle[n], alpha=0.9)
+    # ax1.scatter(ll, _std_dev_binned(data_empiric.approx_variance_min_ma/variance_min_ma-1, label='Ratio', color='black', s=3, marker='x')
     ax1.set_xlabel("Multipole")
     ax1.set_ylabel(r"Rel. diff.")
     ax1.set_ylim(rd_ylim)

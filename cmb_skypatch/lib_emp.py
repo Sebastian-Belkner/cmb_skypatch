@@ -38,7 +38,11 @@ class Lib_emp:
     __detector = cf['pa']['detector']
 
 
-    def __init__(self, C_lF = None, C_lN = None, C_lS = None, C_ltot= None, cov_lF = None, cov_lN = None, cov_lS = None, dov_ltot = None, cov_ltot = None, C_lN_factor=1, fsky=1.):
+    def __init__(self, C_lF = None, C_lN = None, C_lS = None, C_ltot= None,
+        D_lF = None, D_lN = None, D_lS = None, D_ltot= None,
+        cov_lF = None, cov_lN = None, cov_lS = None, cov_ltot = None,
+        dov_lF = None, dov_lN = None, dov_lS = None, dov_ltot = None,
+        C_lN_factor=1, fsky=1.):
         ll = np.arange(0,Lib_emp.__lmax+1,1)
         self.shape = (Lib_emp.__lmax+1, len(Lib_emp.__detector), len(Lib_emp.__detector))
         self.fsky = fsky
@@ -53,13 +57,18 @@ class Lib_emp:
             self.C_lS = C_lS
 
         self.C_ltot = C_ltot
-
         self.cov_lS = cov_lS
-        self.cov_lN = cov_lN
-        if cov_ltot != None:
+
+        if cov_ltot is not None:
             self.cov_ltot = cov_ltot
         elif dov_ltot is not None:
             self.cov_ltot = dov_ltot/(ll*(ll+1))*2*np.pi
+
+        if cov_lN is not None:
+            self.cov_ltot = cov_ltot
+        elif dov_lN is not None:
+            self.cov_lN = dov_lN/(ll*(ll+1))*2*np.pi
+        
         self.cov_ltot_min = np.concatenate(
             (np.zeros(shape=(self.cov_ltot.shape[0],1)),
              np.array([
