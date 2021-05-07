@@ -313,8 +313,8 @@ plot.compare_improvement(spdata, ["8_20-8_5","8_5-8_0"])
 
 
 # %%
-plot.compare_errorbars(empdata, ['0'])
-
+# plot.compare_errorbars(emp, ['0'])
+plot.compare_errorbars(spdata, ['0'])
 
 
 # %%
@@ -326,30 +326,14 @@ hp.mollview(spdata['1']['20'].noisevar_map['100'], title='{}GHz, with {} smoothi
 
 
 # %%
-import json
-
-import sys
-import random
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.patches import Patch
-import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-
-from scipy import stats
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-# %%
 print(spdata['1']['0'].cov_ltot.shape)
 # [0,:,idx,idx]
 print(spdata['1']['0'].approx_variance.shape)
 ll = np.arange(0,spdata['1']['0'].approx_variance_min_ma.shape[0],1)
 for idx, n in enumerate(["030", "044", "070", "100", "143", "217", "353"]):
     plt.plot(spdataNN['1']['0'].C_lS/np.sqrt(2 * spdata['1']['0'].cov_ltot[0,:,idx,idx] * spdata['1']['0'].cov_ltot[0,:,idx,idx]/((2*ll+1))), label=n)
-plt.plot(spdataNN['1']['0'].C_lS/np.sqrt(spdataNN['1']['0'].variance[:,0,0]), label='optimal CV limit')
-plt.plot(spdata['1']['0'].C_lS/np.sqrt(spdata['1']['0'].variance[:,0,0]), label='combined channels')
+plt.plot(spdataNN['1']['0'].C_lS/np.sqrt(spdataNN['1']['0'].approx_variance[:,0,0]), label='optimal CV limit')
+plt.plot(spdata['1']['0'].C_lS/np.sqrt(spdata['1']['0'].approx_variance[:,0,0]), label='combined channels')
     # plt.plot(spdata['1']['0'].variance[:,0,0])
 plt.legend()
 plt.xlim((20,2000))
