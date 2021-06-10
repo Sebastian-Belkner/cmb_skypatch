@@ -89,8 +89,36 @@ emp = {'1': { '0':
 
 
 # %%
-npatches = '1'
-smoothing_par = '20'
+from lib import Lib
+
+
+# %%
+npatch = [1,8]
+smoothing_par = cf['pa']['smoothing_par']
+
+for n in npatch:
+    if str(n) in spdataNN.keys():
+        pass
+    else:
+        spdataNN.update({str(n): dict()})
+    for smooth in smoothing_par:
+        if str(smooth) in spdataNN[str(n)].keys():
+            pass
+        else:
+            spdataNN[str(n)].update({str(smooth): 
+                Lib(npatch = n, smoothing_par = smooth, C_lF=None, C_lN=None, C_lN_factor=0.000001)})
+
+for n in npatch:
+    if str(n) in spdata.keys():
+        pass
+    else:
+        spdata.update({str(n): dict()})
+    for smooth in smoothing_par:
+        if str(smooth) in spdata[str(n)].keys():
+            pass
+        else:
+            spdata[str(n)].update({str(smooth): 
+                Lib(npatch = n, smoothing_par = smooth, C_lF=None, C_lN=None)})
 
 
 # %% Noise Powerspectra
@@ -269,39 +297,6 @@ ax1.set_xscale('log')
 ax1.set_xlim((2e1,3e3))
 ax1.hlines(0,2e1,3e3, color='black', ls='--')
 plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/variance-NoiseSignal{}patches{}smoothing.jpg".format(npatches, smoothing_par))
-
-# ax1.legend()
-# %%
-from lib import Lib
-
-
-# %%
-npatch = [1,8]
-smoothing_par = cf['pa']['smoothing_par']
-
-for n in npatch:
-    if str(n) in spdataNN.keys():
-        pass
-    else:
-        spdataNN.update({str(n): dict()})
-    for smooth in smoothing_par:
-        if str(smooth) in spdataNN[str(n)].keys():
-            pass
-        else:
-            spdataNN[str(n)].update({str(smooth): 
-                Lib(npatch = n, smoothing_par = smooth, C_lF=None, C_lN=None, C_lN_factor=0.000001)})
-
-for n in npatch:
-    if str(n) in spdata.keys():
-        pass
-    else:
-        spdata.update({str(n): dict()})
-    for smooth in smoothing_par:
-        if str(smooth) in spdata[str(n)].keys():
-            pass
-        else:
-            spdata[str(n)].update({str(smooth): 
-                Lib(npatch = n, smoothing_par = smooth, C_lF=None, C_lN=None)})
 
 
 # %%

@@ -1,0 +1,8 @@
+numpy
+matplotlib
+pandas
+healpy
+astropy
+logdecorator
+setuptools
+git+git://github.com/Sebastian-Belkner/cmb_skypatch
