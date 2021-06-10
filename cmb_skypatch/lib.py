@@ -5,38 +5,42 @@
 __author__ = "S. Belkner"
 
 
+import json
+import os
+import platform
+
+import component_separation.io as io
 import healpy as hp
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
-
-from numpy import inf
-import json
-import platform
 from component_separation.cs_util import Planckf, Plancks
-import component_separation.io as io
+from numpy import inf
+import cmb_skypatch
+
+__uname = platform.uname()
+if __uname.node == "DESKTOP-KMIGUPV":
+    mch = "XPS"
+else:
+    mch = "NERSC"
+
+with open(os.path.dirname(cmb_skypatch.__file__)+'/config.json', "r") as f:
+    cf = json.load(f)
 
 class Lib:
     PLANCKSPECTRUM = [p.value for p in list(Plancks)]
     PLANCKMAPFREQ = [p.value for p in list(Planckf)]
-    __uname = platform.uname()
-    if __uname.node == "DESKTOP-KMIGUPV":
-        mch = "XPS"
-    else:
-        mch = "NERSC"
-    with open('/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/config.json', "r") as f:
-        cf = json.load(f)
+
     cf[mch]["indir"] = "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/data/"
     spectrum_trth = pd.read_csv(
-        "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/"+cf[mch]['powspec_truthfile'],
+        cf[mch]['powspec_truthfile'],
         header=0,
         sep='    ',
         index_col=0)["Planck-"+"EE"]
         
-    noisevar_map_raw = io.load_plamap_new(cf, field=7)
+    noisevar_map_raw = io.load_plamap(cf, field=7)
 
     
-
     smoothed_noisevar_map = dict()
     for smooth in cf['pa']['smoothing_par']:
         if float(smooth) != 0.0:
@@ -49,7 +53,6 @@ class Lib:
                     hp.smoothing(val, fwhm=smooth*0.0174533, iter=0)})
 
         
-    
     __lmax = cf['pa']['lmax']
     __detector = cf['pa']['detector']
     __freqc = [n+"-"+n for n in __detector]

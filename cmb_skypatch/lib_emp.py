@@ -13,6 +13,7 @@ __author__ = "S. Belkner"
 
 import healpy as hp
 import numpy as np
+import os
 import numpy.ma as ma
 import pandas as pd
 

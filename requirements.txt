@@ -5,4 +5,5 @@ healpy
 astropy
 logdecorator
 setuptools
-git+git://github.com/Sebastian-Belkner/cmb_skypatch
+#ignore for now. TODO fix it.
+#git+git://github.com/Sebastian-Belkner/component_separation@master#egg=component_separation

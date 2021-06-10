@@ -1,0 +1,204 @@
+{
+"pa":{
+    "Tscale": "K_CMB",
+    "mskset": "lens",
+    "freqdset": "NPIPE",
+    "lmax": 3000,
+    "smoothing_par": [0],
+    "npatch": [1,8,16,32],
+    "lmax_mask": 6000,
+    "freqdatsplit": "",
+    "detector": ["030", "044", "070", "100", "143", "217", "353"],
+    "freqfilter": ["545", "857"],
+    "specfilter": [
+        "TT",
+        "TB",
+        "TE",
+        "EB",
+        "ET",
+        "BT",
+        "BE",
+        "BB"
+    ],
+    "nside": [
+        1024,
+        2048
+    ]
+},
+"NERSC": {
+    "powspec_truthfile": "/global/homes/s/sebibel/git/component_separation/data/powspecplanck.txt",
+    "beamf":{
+        "HFI": {     
+            "ap": "/global/homes/s/sebibel/data/beamf/",
+            "filename": "Bl_TEB_R3.01_fullsky_{freq1}x{freq2}.fits"
+        },
+        "LFI": {     
+            "ap": "/global/homes/s/sebibel/data/beamf/",
+            "filename": "LFI_RIMO_R3.31.fits"
+        }
+    },
+    "NPIPE":{
+        "ap": "/global/cfs/cdirs/cmb/data/planck2020/npipe/npipe6v20{split}/",
+        "filename": "npipe6v20{split}_{freq}_map.fits",
+        "split": [
+            "A",
+            "B",
+            ""
+        ]
+    },
+    "NPIPE_sim":{
+        "ap": "/global/cfs/cdirs/cmb/data/planck2020/npipe/npipe6v20{split}_sim/{sim_id}/",
+        "filename": "npipe6v20{split}_{freq}_map.fits",
+        "noisefix_filename": "noisefix/noisefix_{freq}{split}_{sim_id}.fits",
+        "order": "NESTED",
+        "sim_id": "0200",
+        "split": [
+            "A",
+            "B",
+            ""
+            ]
+        
+        },
+    "NPIPE_sim_diff":{
+            "ap": "/global/cscratch1/sd/sebibel/map/frequency/",
+            "filename": "{sim_id}_half_diff_npipe6v20{split}_{freq}.fits",
+            "order": "NESTED",
+            "sim_id": "0200",
+            "split": [
+                "A",
+                "B",
+                ""
+                ]
+    },
+    "NPIPE_sim_cmb":{
+        "ap": "/global/cfs/cdirs/cmb/data/planck2020/npipe/npipe6v20{split}_sim/{sim_id}/input/",
+        "filename": "ffp10_cmb_{freq}_alm_mc_{sim_id}_nside{nside}_quickpol.fits",
+        "order": "NESTED",
+        "sim_id": "0200",
+        "split": [
+            "A",
+            "B",
+            ""
+            ]
+    },
+    "lens":{
+        "tmask":{
+            "ap": "/global/homes/s/sebibel/data/mask/",
+            "filename": "PR3vJan18_temp_lensingmask_gPR2_70_psPR2_143_COT2_smicadx12_smicapoldx12_psPR2_217_sz.fits.gz"
+            },
+        "pmask":{
+            "ap": "/global/homes/s/sebibel/data/mask/",
+            "filename": [
+                "PR3vJan18_temp_lensingmask_gPR2_70_psPR2_143_COT2_smicadx12_smicapoldx12_psPR2_217_sz.fits.gz"
+            ]
+            }
+        },
+    "smica":{
+        "tmask":{
+            "ap": "/global/homes/s/sebibel/data/mask/",
+            "filename": "PR3vJan18_temp_lensingmask_gPR2_70_psPR2_143_COT2_smicadx12_smicapoldx12_psPR2_217_sz.fits.gz"
+            },
+        "pmask":{
+            "ap": "/global/homes/s/sebibel/data/mask/",
+            "filename": [
+                "psmaskP_2048.fits.gz",
+                "gmaskP_apodized_0_2048.fits.gz"
+                ]
+            }
+        },
+    "outdir_ap": "/global/cscratch1/sd/sebibel/",
+    "outdir_misc_ap": "/global/cscratch1/sd/sebibel/misc/",
+    "outdir_spectrum_ap": "/global/cscratch1/sd/sebibel/spectrum/",
+    "outdir_weight_ap": "/global/cscratch1/sd/sebibel/weights/",
+    "outdir_map_ap": "/global/cscratch1/sd/sebibel/map/frequency/",
+    "outdir_mask_ap": "/global/cscratch1/sd/sebibel/mask/frequency/"
+    },
+"XPS":{
+    "powspec_truthfile": "data/powspecplanck.txt",
+    "beamf":{
+        "HFI": {
+            "path": "beamf/BeamWf_HFI_R3.01/",
+            "filename": "Bl_TEB_R3.01_fullsky_{freq1}x{freq2}.fits"
+            },
+        "LFI": {
+            "path": "beamf/BeamWF_LFI/",
+        "filename": "LFI_RIMO_R3.31.fits"
+            }
+        },
+    "NPIPE":{
+            "path": null,
+            "filename": null
+        },
+    "DX12":{
+            "path": "map/frequency/",
+            "filename": "{LorH}_SkyMap_{freq}-field_{nside}_R3.{00/1}_full.fits"
+        },
+    "DX12-split1":{
+        "path": "map/frequency/",
+        "filename": "{LorH}_SkyMap_{freq}_{nside}_R3.{00/1}_full-{even/half1}ring.fits"
+    },
+    "DX12-split2":{
+        "path": "map/frequency/",
+        "filename": "{LorH}_SkyMap_{freq}_{nside}_R3.{00/1}_full-{odd/half2}ring.fits"
+    },
+    "DX12-diff":{
+        "path": "map/frequency/",
+        "filename": "{LorH}_SkyMap_{freq}_{nside}_R3.{00/1}_full-evenoddhalfdifference_unscaled-preprocessed.fits.npy"
+    },
+    "lens":{
+        "tmask":{
+            "path": "mask/",
+            "filename": "PR3vJan18_temp_lensingmask_gPR2_70_psPR2_143_COT2_smicadx12_smicapoldx12_psPR2_217_sz.fits.gz"
+            },
+        "pmask":{
+            "path": "mask/",
+            "filename": [
+                "PR3vJan18_temp_lensingmask_gPR2_70_psPR2_143_COT2_smicadx12_smicapoldx12_psPR2_217_sz.fits.gz"
+            ]
+            }
+        },
+    "smica":{
+        "tmask":{
+            "path": "mask/",
+            "filename": "PR3vJan18_temp_lensingmask_gPR2_70_psPR2_143_COT2_smicadx12_smicapoldx12_psPR2_217_sz.fits.gz"
+            },
+        "pmask":{
+            "path": "mask/",
+            "filename": [
+                "psmaskP_2048.fits.gz",
+                "gmaskP_apodized_0_2048.fits.gz"
+                ]
+            }
+        },
+    "mask-spatch-smica":{
+        "tmask":{
+            "path": "tmp/mask/frequency/",
+            "filename": "HFI_SkyMask_217_2048_R3.01_full_smica_tmask_spatch.fits"
+            },
+        "pmask":{
+            "path": "tmp/mask/frequency/",
+            "filename": [
+                "HFI_SkyMask_217_2048_R3.01_full_smica_pmask_spatch.fits"
+                ]
+            }
+        },
+    "mask-lpatch-smica":{
+        "tmask":{
+            "path": "tmp/mask/frequency/",
+            "filename": "HFI_SkyMask_217_2048_R3.01_full_smica_tmask_lpatch.fits"
+            },
+        "pmask":{
+            "path": "tmp/mask/frequency/",
+            "filename": [
+                "HFI_SkyMask_217_2048_R3.01_full_smica_pmask_lpatch.fits"
+                ]
+            }
+        },
+    "outdir": "data/tmp/",
+    "outdir_spectrum": "data/tmp/spectrum/",
+    "outdir_weight": "data/tmp/weights/",
+    "outdir_map": "data/tmp/map/frequency/",
+    "outdir_mask": "data/tmp/mask/frequency/",
+    "indir": "data/"
+    }
+}

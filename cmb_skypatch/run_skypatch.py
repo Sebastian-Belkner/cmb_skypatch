@@ -6,6 +6,7 @@ The skypatch spectra are combined to a single spectrum.
 
 import json
 import numpy as np
+import os
 import plot
 import matplotlib.pyplot as plt
 import healpy as hp
