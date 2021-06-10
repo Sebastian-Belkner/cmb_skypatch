@@ -4,7 +4,7 @@
     "mskset": "smica",
     "freqdset": "DX12",
     "lmax": 3000,
-    "smoothing_par": [0,5,20],
+    "smoothing_par": [0],
     "npatch": [1,8,16,32],
     "lmax_mask": 6000,
     "detector": ["030", "044", "070", "100", "143", "217", "353"],
@@ -25,7 +25,7 @@
     ]
 },
 "NERSC":{
-    "powspec_truthfile": "/global/u2/s/sebibel/git/data/powspecplanck.txt",
+    "powspec_truthfile": "/global/homes/s/sebibel/git/component_separation/data/powspecplanck.txt",
     "beamf":{
         "HFI": {     
             "path": "/global/u2/s/sebibel/data/beamf/",

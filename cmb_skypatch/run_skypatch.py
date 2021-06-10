@@ -43,14 +43,14 @@ if __name__ == '__main__':
     emp_cov_ltot = pw.build_covmatrices(emp_C_ltot, lmax, cf['pa']['freqfilter'], cf['pa']['specfilter'])
 
 
-    # This creates a Lib_emp object. The data structure is very similar to the Lib object
-    # Currently, Lib_emp doesnt support patches or smoothing, thus dictionary must be set
+    # Create a `Lib_emp` object. The data structure is very similar to the `Lib` object
+    # Currently, `Lib_emp` doesnt support patches or smoothing, thus dictionary must be set
     # to {'1': { '0': [..] } }.
     emp = {'1': { '0': # emp[npatches][smoothing_par]
         Lib_emp(dov_ltot=np.array([emp_cov_ltot["EE"]]), dov_lN=np.array([emp_cov_lN["EE"]]))}}
 
 
-    # This creates a Lib object. One can decide the number of patches and smoothing, for which the spectra
+    # Create a `Lib` object. One can decide the number of patches and smoothing, for which the spectra
     # are being generated. The spectra are 'analytic', i.e.
     #   * C_lS is taken from planck best fits,
     #   * C_lN is build by generating npatch patches of the sky, based on equi-noise-level-areas and is then
@@ -69,7 +69,6 @@ if __name__ == '__main__':
             else:
                 spdata[str(n)].update({str(smooth): 
                     Lib(npatch = n, smoothing_par = smooth, C_lF=None, C_lN=None)})
-
 
 
     ### When completed, one may compare `cov_ltot_min` for different number of skypatches.

@@ -1,4 +1,10 @@
-"""lib_emp.py: This serves as base library for the sky patching.
+"""lib_emp.py: This serves as base library for sky patching. 
+    The functionality of Lib_emp is limited. This class merely
+    serves as a helper to serve the same datastructure for empiric data as it does for the
+    `Lib` objects.
+
+    The class is put in its own module to avoid executing smoothing, when only
+    empiric data is used.
 
 """
 
@@ -15,21 +21,27 @@ import json
 import platform
 from component_separation.cs_util import Planckf, Plancks
 import component_separation.io as io
+import cmb_skypatch
+
+__uname = platform.uname()
+if __uname.node == "DESKTOP-KMIGUPV":
+    mch = "XPS"
+else:
+    mch = "NERSC"
+
+with open(os.path.dirname(cmb_skypatch.__file__)+'/config.json', "r") as f:
+    cf = json.load(f)
 
 
 class Lib_emp:
-    PLANCKSPECTRUM = [p.value for p in list(Plancks)]
-    PLANCKMAPFREQ = [p.value for p in list(Planckf)]
-    __uname = platform.uname()
-    if __uname.node == "DESKTOP-KMIGUPV":
-        mch = "XPS"
-    else:
-        mch = "NERSC"
-    with open('/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/config.json', "r") as f:
-        cf = json.load(f)
-    cf[mch]["indir"] = "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/data/"
+    """
+    The functionality of Lib_emp is limited. This class merely serves as a helper
+    to serve the same datastructure for empiric data as it does for the
+    `Lib` objects.
+    """
+
     spectrum_trth = pd.read_csv(
-        "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/"+cf[mch]['powspec_truthfile'],
+        cf[mch]['powspec_truthfile'],
         header=0,
         sep='    ',
         index_col=0)["Planck-"+"EE"]
