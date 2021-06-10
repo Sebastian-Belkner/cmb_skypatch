@@ -1,3 +1,7 @@
+"""
+TODO turn this into a notebook
+"""
+
 # %%
 import json
 import numpy as np
