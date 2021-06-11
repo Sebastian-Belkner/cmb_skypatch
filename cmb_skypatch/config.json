@@ -177,30 +177,6 @@
                 ]
             }
         },
-    "mask-spatch-smica":{
-        "tmask":{
-            "path": "tmp/mask/frequency/",
-            "filename": "HFI_SkyMask_217_2048_R3.01_full_smica_tmask_spatch.fits"
-            },
-        "pmask":{
-            "path": "tmp/mask/frequency/",
-            "filename": [
-                "HFI_SkyMask_217_2048_R3.01_full_smica_pmask_spatch.fits"
-                ]
-            }
-        },
-    "mask-lpatch-smica":{
-        "tmask":{
-            "path": "tmp/mask/frequency/",
-            "filename": "HFI_SkyMask_217_2048_R3.01_full_smica_tmask_lpatch.fits"
-            },
-        "pmask":{
-            "path": "tmp/mask/frequency/",
-            "filename": [
-                "HFI_SkyMask_217_2048_R3.01_full_smica_pmask_lpatch.fits"
-                ]
-            }
-        },
     "outdir": "data/tmp/",
     "outdir_spectrum": "data/tmp/spectrum/",
     "outdir_weight": "data/tmp/weights/",

@@ -13,6 +13,7 @@ from component_separation.cs_util import Config as csu
 from component_separation.cs_util import Helperfunctions as hpf
 import numpy as np
 import os
+import platform
 import pandas as pd
 
 from scipy import stats
@@ -20,6 +21,12 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 CB_color_cycle = ["#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
                              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888"]
 
+uname = platform.uname()
+if uname.node == "DESKTOP-KMIGUPV":
+    mch = "XPS"
+else:
+    mch = "NERSC"
+    
 import cmb_skypatch
 with open(os.path.dirname(cmb_skypatch.__file__)+'/config.json', "r") as f:
     cf = json.load(f)

@@ -86,4 +86,4 @@ if __name__ == '__main__':
     plot.spectrum_variance(emp['1']['0'], spdata['1']['0'], rd_ylim=(-0.2,0.7), npatches= cf['pa']['npatch'], smoothing_par = smoothing_par)
     plot.compare_variance_min(spdata)
     plot.compare_improvement(spdata, ["8_20-8_5","8_5-8_0"])
-    plot.compare_errorbars(spdata, ['0'])
+    plot.compare_errorbars(spdata, ['0'], show=False)
