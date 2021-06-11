@@ -113,7 +113,7 @@
                 ]
             }
         },
-    "outdir_ap": "/global/cscratch1/sd/sebibel/",
+    "outdir_vis_ap": "/global/cscratch1/sd/sebibel/cmb_skypatch/vis/",
     "outdir_misc_ap": "/global/cscratch1/sd/sebibel/misc/",
     "outdir_spectrum_ap": "/global/cscratch1/sd/sebibel/spectrum/",
     "outdir_weight_ap": "/global/cscratch1/sd/sebibel/weights/",

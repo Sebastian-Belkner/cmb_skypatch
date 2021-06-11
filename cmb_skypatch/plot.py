@@ -103,7 +103,8 @@ def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7), npatch='1', smoo
     ax1.hlines(0,2e1,3e3, color='black', ls='--')
     if show:
         plt.show()
-    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/analyticpatching-NoiseSignal{}patches.jpg".format(str(cov_ltot_min.shape[0])))
+    plt.savefig(
+        "{}analyticpatching-NoiseSignal{}patches.jpg".format(cf[mch]['outdir_vis_ap'], str(cov_ltot_min.shape[0])))
     
 
 def compare_variance_min(data, show=False):
@@ -135,7 +136,7 @@ def compare_variance_min(data, show=False):
     
     if show:
         plt.show()
-    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_variance_patches{}_smoothings{}.jpg".format(str([key for key, val in data.items()]), pr))
+    plt.savefig("{}compare_variance_patches{}_smoothings{}.jpg".format(cf[mch]['outdir_vis_ap'], str([key for key, val in data.items()]), pr))
 
 
 def compare_improvement(data, compare_conf, show=False):
@@ -155,7 +156,7 @@ def compare_improvement(data, compare_conf, show=False):
         
     if show:
         plt.show()
-    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_variance_improvement_{}.jpg".format(str(compare_conf)))
+    plt.savefig("{}compare_variance_improvement_{}.jpg".format(cf[mch]['outdir_vis_ap'], str(compare_conf)))
 
 
 def compare_errorbars(data, user_smoothpar, show=False):
@@ -186,7 +187,7 @@ def compare_errorbars(data, user_smoothpar, show=False):
     plt.xlim((1e1,3e3))
     if show:
         plt.show()
-    plt.savefig("/mnt/c/Users/sebas/OneDrive/Desktop/Uni/project/cmb_skypatch/vis/compare_errorbars{}_smoothings{}.jpg".format(str([key for key, val in data.items()]), pr))
+    plt.savefig("{}compare_errorbars{}_smoothings{}.jpg".format(cf[mch]['outdir_vis_ap'], str([key for key, val in data.items()]), pr))
 
 
 def s_over_n(data, show=False):
