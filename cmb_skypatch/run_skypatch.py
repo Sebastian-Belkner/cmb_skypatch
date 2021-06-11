@@ -7,17 +7,20 @@ The skypatch spectra are combined to a single spectrum.
 import json
 import numpy as np
 import os
-import plot
+import cmb_skypatch.plot
 import matplotlib.pyplot as plt
 import healpy as hp
 import component_separation.io as io
 import matplotlib.gridspec as gridspec
 import component_separation.powspec as pw
 import itertools
+import platform
 from component_separation.cs_util import Config as csu
-from lib_emp import Lib_emp
-from lib import Lib
-
+from component_separation.cs_util import Helperfunctions as hpf
+from cmb_skypatch.lib_emp import Lib_emp
+from cmb_skypatch.lib import Lib
+from matplotlib.patches import Patch
+import cmb_skypatch.plot as plot
 
 import cmb_skypatch
 with open(os.path.dirname(cmb_skypatch.__file__)+'/config.json', "r") as f:
@@ -30,18 +33,23 @@ else:
     mch = "NERSC"
 
 
+
 if __name__ == '__main__':
     filename = io.make_filenamestring(cf)
     print(40*"$")
     print("Starting run with the following settings:")
     print(cf['pa'])
-    print("Generated filename(s) for this session: {}".format(filename))
+    print("Generated filename(s) for this session: {}".format(filenam--e))
     print(40*"$")
 
     # Load empiric data, one spectrum per detector
     #   - you may want to run component_separation to create them
     emp_C_ltot = io.load_data(io.spec_sc_path_name)
-    emp_cov_ltot = pw.build_covmatrices(emp_C_ltot, lmax, cf['pa']['freqfilter'], cf['pa']['specfilter'])
+    emp_cov_ltot = pw.build_covmatrices(emp_C_ltot, cf['pa']['lmax'], cf['pa']['freqfilter'], cf['pa']['specfilter'])
+    
+    io.spec_sc_path_name
+    emp_C_lN = io.load_data(io.noise_sc_path_name)
+    emp_cov_lN = pw.build_covmatrices(emp_C_lN, cf['pa']['lmax'], cf['pa']['freqfilter'], cf['pa']['specfilter'])
 
 
     # Create a `Lib_emp` object. The data structure is very similar to the `Lib` object
@@ -75,6 +83,7 @@ if __name__ == '__main__':
     ### When completed, one may compare `cov_ltot_min` for different number of skypatches.
     ### We expect, that cov_ltot_min decreases for increasing number of patches.
     ### plot.py covers diagram generation for visualising the result
-    plot.spectrum_variance(emp['1']['0'], spdata['1']['0'], rd_ylim=(-0.2,0.7), npatches= npatches, smoothing_par = smoothing_par)
+    plot.spectrum_variance(emp['1']['0'], spdata['1']['0'], rd_ylim=(-0.2,0.7), npatches= cf['pa']['npatch'], smoothing_par = smoothing_par)
     plot.compare_variance_min(spdata)
     plot.compare_improvement(spdata, ["8_20-8_5","8_5-8_0"])
+    plot.compare_errorbars(spdata, ['0'])

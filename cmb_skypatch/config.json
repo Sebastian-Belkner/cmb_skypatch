@@ -7,9 +7,12 @@
     "smoothing_par": [0],
     "npatch": [1,8,16,32],
     "lmax_mask": 6000,
+    "smoothing_window": 0,
+    "max_polynom": 0,
     "freqdatsplit": "",
     "detector": ["030", "044", "070", "100", "143", "217", "353"],
     "freqfilter": ["545", "857"],
+
     "specfilter": [
         "TT",
         "TB",
@@ -36,6 +39,10 @@
             "ap": "/global/homes/s/sebibel/data/beamf/",
             "filename": "LFI_RIMO_R3.31.fits"
         }
+    },
+    "DX12":{
+        "ap": "/global/cfs/cdirs/cmb/data/planck2020/pla/frequency_maps/Single-frequency/",
+        "filename": "{LorH}_SkyMap_{freq}_{nside}_R4.00_full.fits"
     },
     "NPIPE":{
         "ap": "/global/cfs/cdirs/cmb/data/planck2020/npipe/npipe6v20{split}/",

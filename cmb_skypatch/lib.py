@@ -31,16 +31,19 @@ class Lib:
     PLANCKSPECTRUM = [p.value for p in list(Plancks)]
     PLANCKMAPFREQ = [p.value for p in list(Planckf)]
 
-    cf[mch]["indir"] = "/mnt/c/Users/sebas/OneDrive/Desktop/Uni/data/"
+
     spectrum_trth = pd.read_csv(
         cf[mch]['powspec_truthfile'],
         header=0,
         sep='    ',
         index_col=0)["Planck-"+"EE"]
-        
-    noisevar_map_raw = io.load_plamap(cf, field=7)
-
     
+    # as we are only interested in noise var map, take DX12 data.
+    buff = cf['pa']["freqdset"]
+    cf['pa']["freqdset"] = 'DX12'
+    noisevar_map_raw = io.load_plamap(cf, field=7)
+    cf['pa']["freqdset"] = buff
+
     smoothed_noisevar_map = dict()
     for smooth in cf['pa']['smoothing_par']:
         if float(smooth) != 0.0:
@@ -52,11 +55,10 @@ class Lib:
                 smoothed_noisevar_map[str(float(smooth))].update({key:
                     hp.smoothing(val, fwhm=smooth*0.0174533, iter=0)})
 
-        
     __lmax = cf['pa']['lmax']
     __detector = cf['pa']['detector']
     __freqc = [n+"-"+n for n in __detector]
-    __beamf = io.load_beamf(__freqc, abs_path="/mnt/c/Users/sebas/OneDrive/Desktop/Uni/")
+    __beamf = io.load_beamf(__freqc)
 
 
     def __init__(self, npatch, smoothing_par = 0, C_lF = None, C_lN = None, C_lS = None, C_lN_factor=1):
