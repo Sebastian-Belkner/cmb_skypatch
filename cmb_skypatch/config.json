@@ -5,7 +5,7 @@
     "freqdset": "NPIPE",
     "lmax": 3000,
     "smoothing_par": [0],
-    "npatch": [1,8,16,32],
+    "npatch": [1,16],
     "lmax_mask": 6000,
     "smoothing_window": 0,
     "max_polynom": 0,

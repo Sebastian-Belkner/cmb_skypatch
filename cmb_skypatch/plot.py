@@ -32,40 +32,43 @@ with open(os.path.dirname(cmb_skypatch.__file__)+'/config.json', "r") as f:
     cf = json.load(f)
 
 
-def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7), npatch='1', smoothing_par='0', show=False):
+def spectrum_variance(data, rd_ylim = (-0.2,0.7), npatch='1', smoothing_par='0', show=False):
     C_lS = data[npatch]['0'].C_lS
     cov_ltot_min = data[npatch]['0'].cov_ltot_min
     variance_min_ma = data[npatch]['0'].approx_variance_min_ma
     variance = data[npatch]['0'].approx_variance
-
+    CB_color_cycle = ["#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
+                                 "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888","#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
+                                 "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888"]
     plt.figure(figsize=(8,6))
 
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax0 = plt.subplot(gs[0])
     ll = np.arange(0,variance_min_ma.shape[0],1)
 
-    ax0.plot(variance_min_ma, label='Variance, combined patches', lw=3, ls="-", color="black")
-    ax0.plot(data[npatch]['0'].approx_variance_min_ma, label='Variance, combined patches', lw=3, ls="-", color="grey")
-    ax0.scatter(ll, data_empiric.approx_variance_min_ma*hpf.llp1e12(np.arange(0,3000+1,1))*1e-6, label="Variance, empiric data", lw=2, ls="--", color="black", s=3, marker='x')
+    ax0.plot(data['1']['0'].approx_variance_min_ma, label='Variance, 1 patch', lw=3, ls="-", color="black", alpha=0.5)
+    ax0.plot(data[npatch]['0'].approx_variance_min_ma, label='Variance, {} combined patches'.format(npatch), lw=3, ls="-", color="black")
+    # ax0.scatter(
+    #     ll,
+    #     data_empiric.approx_variance_min_ma*(hpf.llp1e12(np.arange(0,3000+1,1)))**2*1e-24/0.670629620552063,
+    #     label="Minimal variance, empiric data",
+    #     lw=1, ls="--", color="black", s=3, marker='x', alpha=0.5)
+
     ax0.plot(2*C_lS*C_lS/((2*ll+1)), label="Variance, Planck EE, full sky", lw=3, ls="-", color="blue")
     # plt.plot(loc_opt_NN, label = "Variance, Planck EE, combined patches", lw=3, ls="--", color="green")
 
-
     ax0.plot(C_lS, label = 'Planck EE', lw=3, ls="-", color="red", alpha=0.5)
-
 
     for n in range(cov_ltot_min.shape[0]):
         ax0.plot(cov_ltot_min[n,:], lw=1, ls="-", color="red", alpha=0.5)
     ax0.plot(0,0, label='Minimal powerspectrum from patches', color='red', alpha=0.5, lw=1)
-    ax0.plot(data_empiric.cov_ltot_min[0,:]*hpf.llp1e12(np.arange(0,3000+1,1))*1e-12, label='Minimal powerspectrum from empiric data', color='red', alpha=0.5, lw=1)
-
 
     leg1 = ax0.legend(loc='upper left')
     pa = [None for n in range(variance.shape[1])]
     for n in range(len(pa)):
-        p = ax0.plot(variance[:,n,n], lw=2, ls="-", alpha=0.5)
+        p = ax0.plot(variance[:,n,n], lw=2, ls="-", alpha=0.3)
         col = p[0].get_color()
-        pa[n] = Patch(facecolor=col, edgecolor='grey', alpha=0.5)
+        pa[n] = Patch(facecolor=col, edgecolor='grey', alpha=0.3)
     leg2 = ax0.legend(handles=pa[:min(20,len(pa))],
             labels=["" for n in range(min(20,len(pa))-1)] + ['Variance, {} skypatches'.format(str(cov_ltot_min.shape[0]))],
             ncol=variance.shape[1], handletextpad=0.5, handlelength=0.5, columnspacing=-0.5,
@@ -76,13 +79,14 @@ def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7), npatch='1', smoo
     ax0.set_yscale('log')
     ax0.set_ylabel(r"Variance $\sigma^2$ [$\mu K^4$]")
     ax0.set_xlim((2e1,3e3))
-
-    # ax0.set_ylim((1e-10,1e-2))
+    # ax0.set_ylim((1e-11,1e-7))
+    ax0.set_ylim((1e-10,1e-2))
     # plt.tight_layout()
     ax2 = ax0.twinx()
     ax2.tick_params(axis='y', labelcolor="red")
     ax2.set_ylabel(r'Powerspectrum $C_l$ [$\mu K^2$]', color= 'red')
     ax2.set_ylim((1e-10,1e-2))
+    # ax2.set_ylim((1e-11,1e-7))
     ax2.set_yscale('log')
     ax0.set_title("Combining {} skypatches".format(str(cov_ltot_min.shape[0])))
     ax1 = plt.subplot(gs[1])
@@ -90,28 +94,31 @@ def spectrum_variance(data_empiric, data, rd_ylim = (-0.2,0.7), npatch='1', smoo
     bins = np.logspace(np.log10(1), np.log10(cf['pa']['lmax']+1), binwidth)
     bl = bins[:-1]
     br = bins[1:]
-    binmean, binerr , _ = hpf.std_dev_binned(
-            data_empiric.cov_ltot_min[0,:-1]*hpf.llp1e12(np.arange(0,3000,1))*1e-12/data[npatch]['0'].cov_ltot_min[0,:-1]-1,
-            lmax=cf['pa']['lmax'],
-            binwidth=binwidth)
-    # binmean, binerr , _ = std_dev_binned(
-    #     (data_empiric.approx_variance_min_ma*hpf.llp1e12(np.arange(0,3000+1,1))*1e-6/variance_min_ma-1),
+    # binmean, binerr , _ = hpf.std_dev_binned(
+    #         data_empiric.cov_ltot_min[0,:-1]*hpf.llp1e12(np.arange(0,3000,1))*1e-12/data[npatch]['0'].cov_ltot_min[0,:-1]-1,
+    #         lmax=cf['pa']['lmax'],
+    #         binwidth=binwidth)
+    # binmean, binerr , _ = hpf.std_dev_binned(
+    #     (data_empiric.approx_variance_min_ma*(hpf.llp1e12(np.arange(0,3000+1,1)))**2*1e-24/0.670629620552063/data[npatch]['0'].approx_variance_min_ma).data-1,
     #     lmax=cf['pa']['lmax']+1,
     #     binwidth=binwidth)
+    # binmean, binerr , _ = hpf.std_dev_binned(
+    #     (data['1']['0'].approx_variance_min_ma/data['16']['0'].approx_variance_min_ma).data-1,
+    #     lmax=cf['pa']['lmax']+1,
+    #     binwidth=binwidth)
+    # ax1.errorbar(0.5 * bl + 0.5 * br, binmean, binerr, fmt='x', capsize=1,
+    #         color=CB_color_cycle[n], alpha=0.9, label = '1 patch over 16 patch')
 
-    ax1.errorbar(0.5 * bl + 0.5 * br, binmean, binerr, fmt='x', capsize=1,
-            color=CB_color_cycle[n], alpha=0.9)
+    plt.plot((data['1']['0'].approx_variance_min_ma/data[npatch]['0'].approx_variance_min_ma).data[:2000]-1,
+            color='black', alpha=0.9, label = '1 patch over {} patches'.format(npatch), lw=2)
+    ax1.legend()
     # ax1.scatter(ll, hpf.std_dev_binned(data_empiric.approx_variance_min_ma/variance_min_ma-1, label='Ratio', color='black', s=3, marker='x')
     ax1.set_xlabel("Multipole")
     ax1.set_ylabel(r"Rel. diff.")
-    ax1.set_ylim((-1,1))
+    ax1.set_ylim((-0.1,1.0))
     ax1.set_xscale('log')
     ax1.set_xlim((2e1,3e3))
     ax1.hlines(0,2e1,3e3, color='black', ls='--')
-    if show:
-        plt.show()
-    plt.savefig(
-        "{}analyticpatching-NoiseSignal{}patches.jpg".format(cf[mch]['outdir_vis_ap'], str(cov_ltot_min.shape[0])))
     
 
 def compare_variance_min(data, show=False):

@@ -1,4 +1,4 @@
-"""lib.py: This serves as base library for the sky patching.
+"""lib.py: This serves as base library for sky patching.
 
 """
 
@@ -70,16 +70,16 @@ class Lib:
         else:
             self.noisevar_map = Lib.noisevar_map_raw
 
-        if C_lF == None:
+        if C_lF is None:
             self.C_lF = np.zeros(self.shape, float)
 
         self.noiselevel = np.array([self.varmap2noiselevel(self.noisevar_map[freq]) for freq in Lib.__detector])
-        if C_lN == None:
+        if C_lN is None:
             self.C_lN = self.beamf2C_lN(Lib.__beamf, self.noiselevel, Lib.__freqc)*C_lN_factor
         else:
             self.C_lN = C_lN
         ll = np.arange(0,Lib.__lmax+1,1)
-        if C_lS == None:
+        if C_lS is None:
             self.C_lS = Lib.spectrum_trth[:self.shape[0]].to_numpy()/(ll*(ll+1))*2*np.pi
         else:
             self.C_lS = C_lS
